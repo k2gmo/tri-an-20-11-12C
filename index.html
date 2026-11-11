@@ -132,14 +132,9 @@ footer h2{color:var(--co)}
 .aud .audio-head b{display:block;font:700 17px 'Baloo 2';color:var(--co);margin:0}
 .aud audio{width:100%;display:block;margin-top:8px}
 .aud small{display:block;color:var(--mut);margin-top:6px;overflow-wrap:anywhere}
-.aud .audio-delete{flex-shrink:0;border:0;border-radius:30px;padding:7px 13px;background:#ffe5e5;color:#c51f2b;font:700 13px 'Be Vietnam Pro',sans-serif;cursor:pointer;transition:.2s}
-.aud .audio-delete:hover{background:#d8232a;color:#fff;transform:translateY(-1px)}
 .audio-tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0}
 .audio-tools .btn{margin:0}
-.audio-progress{width:min(420px,100%);height:9px;accent-color:var(--co);display:none}
-.audio-admin-state{font-size:13px;color:var(--mut)}
-.aadd{cursor:pointer;margin-top:4px} 
-.aadd.is-disabled{opacity:.6;pointer-events:none}
+.audio-admin-state{font-size:13px;color:var(--mut);margin:8px 0 12px}
 @media(max-width:600px){.aud .audio-head{align-items:flex-start}.audio-tools{align-items:stretch}.audio-tools .btn{width:100%;text-align:center}}
 @media(prefers-reduced-motion:reduce){#fx{display:none}.sf,.bk,.pc,.st{animation:none}}
 </style>
@@ -184,12 +179,10 @@ footer h2{color:var(--co)}
 <h3 class="stt rv">Podcast &amp; nhạc của lớp</h3>
 <div id="aud" class="aud" aria-live="polite"></div>
 <div class="audio-tools">
-  <label class="btn aadd" id="audioUploadLabel">＋ Thêm file audio<input type="file" id="af" accept="audio/*,.mp3,.m4a,.wav,.ogg,.aac,.flac" hidden></label>
-  <button class="btn" id="audioAdminBtn" type="button" style="background:#49627f;box-shadow:0 8px 0 #30445c">Đăng nhập Google</button>
-  <progress class="audio-progress" id="audioProgress" value="0" max="100"></progress>
+  <button class="btn" id="reloadAudioBtn" type="button">↻ Tải lại danh sách nhạc</button>
 </div>
-<p class="audio-admin-state" id="audioAdminState">Nhạc tải lên sẽ được lưu trên Firebase để mọi người cùng nghe. Chỉ quản trị viên mới được xóa nhạc.</p>
-<p class="hint" id="audioStatus">Đang kết nối thư viện âm thanh…</p>
+<p class="audio-admin-state">Thư viện nhạc được lưu trong repository GitHub. Để thêm nhạc, tải file vào thư mục <b>audio/</b> và cập nhật <b>audio/playlist.json</b>. Để xóa, xóa file MP3 và dòng tương ứng trong danh sách.</p>
+<p class="hint" id="audioStatus">Đang tải thư viện nhạc từ GitHub…</p>
 <h3 class="stt rv">Góc ảnh trường mình</h3><div class="strip rv"><figure><img src="cong-truong.webp" alt="Cổng trường"><figcaption>Cổng trường</figcaption></figure><figure><img src="san-truong.webp" alt="Sân trường"><figcaption>Sân trường</figcaption></figure><figure><img src="hanh-lang.webp" alt="Hành lang lớp học"><figcaption>Hành lang lớp học</figcaption></figure><figure><img src="tuong.webp" alt="Tượng đài Quang Trung"><figcaption>Tượng đài Quang Trung</figcaption></figure><figure><img src="day-lop.webp" alt="Dãy lớp thân thương"><figcaption>Dãy lớp thân thương</figcaption></figure><figure><img src="hien-tai.webp" alt="Hiền tài là nguyên khí quốc gia"><figcaption>Hiền tài là nguyên khí quốc gia</figcaption></figure></div>
 </section>
 
@@ -224,9 +217,6 @@ footer h2{color:var(--co)}
 
 <div class="modal" id="md"><div class="box"><button class="x" id="cl" aria-label="Đóng">×</button><img id="mi" alt=""><h3 id="mt"></h3><p id="mb"></p></div></div>
 
-<script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-storage-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-auth-compat.js"></script>
 <script>
 (function(){
 var $=function(q){return document.querySelector(q)};
@@ -240,31 +230,12 @@ var md=$('#md');
 document.querySelectorAll('.card').forEach(function(c){c.onclick=function(){mi.src=c.querySelector("img").src;mt.textContent=c.dataset.t;mb.textContent=c.dataset.b.replace(/\\n/g,'\n');md.classList.add('on')}});
 cl.onclick=function(){md.classList.remove('on')};md.onclick=function(e){if(e.target===md)md.classList.remove('on')};
 var cols=['#ffe08a','#ffc2b0','#c9e8d2','#cfe6ff','#f9d0e6','#ffd9a0'];
-// Firebase web config. Verify storageBucket in Firebase Console > Storage > Files.
-// For a new default bucket this is usually '<project-id>.firebasestorage.app';
-// older projects may use '<project-id>.appspot.com'.
+// Firebase config chỉ dùng cho Firestore (bài viết, lời chúc, kỷ niệm).
+// Âm thanh được phục vụ trực tiếp từ thư mục audio/ trên GitHub Pages.
 var CFG={
  apiKey:'AIzaSyB1Ap5p5FbTY_ic3glD2WjCQ2FE6O2o3go',
- projectId:'tri-an-thay-co-2011',
- authDomain:'tri-an-thay-co-2011.firebaseapp.com',
- storageBucket:'tri-an-thay-co-2011.firebasestorage.app',
- adminEmail:'hoanggiaky76@gmail.com'
+ projectId:'tri-an-thay-co-2011'
 };
-var MAX_AUDIO_BYTES=25*1024*1024;
-var AUDIO_COLLECTION='audioTracks';
-var firebaseApp=null, audioStorage=null, audioAuth=null, currentAudioUser=null, audioAdmin=false;
-try {
- if(window.firebase && CFG.storageBucket && !CFG.storageBucket.startsWith('tri-an-thay-co-2011.firebasestorage.app')) {
-   firebaseApp=firebase.apps.length ? firebase.app() : firebase.initializeApp({
-     apiKey:CFG.apiKey, projectId:CFG.projectId,
-     authDomain:CFG.authDomain, storageBucket:CFG.storageBucket
-   });
-   audioStorage=firebase.storage(firebaseApp);
-   audioAuth=firebase.auth(firebaseApp);
- }
-} catch(firebaseInitError) {
- console.error('Firebase audio initialization failed:',firebaseInitError);
-}
 var KEY='triAnWishes',L=[],cur=1,PER=6,fb=!!(CFG.apiKey&&CFG.projectId),base='https://firestore.googleapis.com/v1/projects/'+CFG.projectId+'/databases/(default)/documents';
 var seed=[{t:'Chúc thầy cô luôn khỏe và hạnh phúc!',w:'Lớp 12A'},{t:'Thầy là người truyền lửa cho em.',w:'Minh'},{t:'Cảm ơn cô đã kiên nhẫn với chúng em ♥',w:'Lan'}];
 function st(m){$('#st').textContent=m}
@@ -349,170 +320,71 @@ if(fb){try{var r=await fetch(base+'/posts?key='+CFG.apiKey,{method:'POST',header
 else{var a=[];try{a=JSON.parse(localStorage.getItem(PK)||'[]')}catch(e){}a.unshift(o);try{localStorage.setItem(PK,JSON.stringify(a))}catch(e){}}
 pbody.value='';pt.value='';PL.unshift(o);pp=1;prender()}
 
-// ---------------- AUDIO LIBRARY (Firebase Storage + Firestore) ----------------
-var audioCatalog=[];
-var audioStatus=$('#audioStatus'),audioProgress=$('#audioProgress'),audioAdminState=$('#audioAdminState');
+// ---------------- AUDIO LIBRARY (GitHub Pages static files) ----------------
+// Danh sach bai hat duoc quan ly trong audio/playlist.json.
+// Moi file am thanh nam trong thu muc audio/ cua repository.
+var audioStatus=$('#audioStatus');
+var AUDIO_MANIFEST='audio/playlist.json';
+var AUDIO_EXTENSIONS=/\.(mp3|m4a|wav|ogg|oga|aac|flac|webm)$/i;
 function audioSay(message,isError){
  if(audioStatus){audioStatus.textContent=message;audioStatus.style.color=isError?'#c51f2b':'';}
 }
-function audioSafeName(name){return String(name||'').replace(/[\\/]+/g,'_').replace(/[^a-zA-Z0-9._() -]/g,'_').slice(0,100)||'audio-file';}
-function audioFields(doc){
- var f=doc.fields||{},val=function(k){return f[k]&&f[k].stringValue||'';};
- return {id:(doc.name||'').split('/').pop(),title:val('title'),fileName:val('fileName'),storagePath:val('storagePath'),downloadURL:val('downloadURL'),contentType:val('contentType'),size:Number(f.size&&f.size.integerValue||0),ts:Number(f.ts&&f.ts.integerValue||0)};
+function audioFileUrl(file){
+ var safeParts=String(file).split('/').map(function(part){return encodeURIComponent(part);});
+ return new URL('audio/'+safeParts.join('/'),document.baseURI).href;
 }
-function isAudioAdmin(){return !!(audioAdmin && currentAudioUser && currentAudioUser.email && currentAudioUser.email.toLowerCase()===String(CFG.adminEmail).toLowerCase());}
-function updateAudioAdminUI(){
- var btn=$('#audioAdminBtn');
- if(currentAudioUser){
-   btn.textContent='Đăng xuất Google';
-   audioAdminState.textContent=isAudioAdmin()
-     ? 'Đã đăng nhập quản trị: '+currentAudioUser.email+'. Bạn có thể tải lên và xóa nhạc.'
-     : 'Đã đăng nhập: '+currentAudioUser.email+'. Bạn có thể tải nhạc lên nhưng không thể xóa.';
- } else {
-   btn.textContent='Đăng nhập Google';
-   audioAdminState.textContent='Mọi người đều có thể nghe. Đăng nhập Google để tải nhạc lên; chỉ quản trị viên mới được xóa.';
- }
- renderAudioLibrary();
+function validAudioTrack(track){
+ if(!track||typeof track!=='object')return false;
+ if(typeof track.file!=='string'||!track.file.trim())return false;
+ // Chi chap nhan ten file tuong doi, khong cho phep URL ben ngoai hay path traversal.
+ if(track.file.indexOf('..')!==-1||track.file.startsWith('/')||track.file.indexOf('\\')!==-1)return false;
+ if(!AUDIO_EXTENSIONS.test(track.file))return false;
+ return true;
 }
-function renderAudioLibrary(){
+function renderAudioLibrary(tracks){
  var root=$('#aud');root.innerHTML='';
- var tracks=AUDIO.map(function(x,i){return {id:'static-'+i,title:x.t,fileName:x.src,downloadURL:x.src,storagePath:'',isStatic:true,ts:0};}).concat(audioCatalog);
- if(!tracks.length){var empty=document.createElement('p');empty.className='hint';empty.textContent='Chưa có file âm thanh nào.';root.appendChild(empty);return;}
+ if(!tracks.length){
+   var empty=document.createElement('p');empty.className='hint';
+   empty.textContent='Chưa có bài nhạc nào. Hãy thêm file âm thanh vào thư mục audio/ trên GitHub và khai báo trong audio/playlist.json.';
+   root.appendChild(empty);return;
+ }
  tracks.forEach(function(track){
    var item=document.createElement('div');item.className='audio-item';
    var head=document.createElement('div');head.className='audio-head';
-   var title=document.createElement('b');title.textContent=track.title||track.fileName||'Tệp âm thanh';head.appendChild(title);
-   if(track.isStatic){var tag=document.createElement('small');tag.textContent='Nhạc có sẵn trên website';head.appendChild(tag);}
-   else if(isAudioAdmin()){
-     var del=document.createElement('button');del.type='button';del.className='audio-delete';del.textContent='✕ Xóa';
-     del.addEventListener('click',function(){deleteAudioTrack(track,del);});head.appendChild(del);
-   }
-   var player=document.createElement('audio');player.controls=true;player.preload='metadata';player.src=track.downloadURL;
+   var title=document.createElement('b');title.textContent=track.title||track.file.replace(/\.[^.]+$/,'');
+   head.appendChild(title);
+   item.appendChild(head);
+   var player=document.createElement('audio');player.controls=true;player.preload='metadata';player.src=audioFileUrl(track.file);
    var detail=document.createElement('small');
-   if(track.isStatic) detail.textContent='File tĩnh trong repository GitHub';
-   else detail.textContent=(track.fileName||'')+(track.size?' · '+(track.size/1024/1024).toFixed(1)+' MB':'');
-   player.addEventListener('error',function(){detail.textContent='Không phát được file. Kiểm tra file trong Firebase Storage hoặc đường dẫn tải.';detail.style.color='#c51f2b';});
-   item.appendChild(head);item.appendChild(player);item.appendChild(detail);root.appendChild(item);
+   detail.textContent=track.artist?track.artist+' · '+track.file:track.file;
+   player.addEventListener('error',function(){
+     detail.textContent='Không tải được file '+track.file+'. Kiểm tra file có nằm trong thư mục audio/ trên GitHub hay không.';
+     detail.style.color='#c51f2b';
+   });
+   item.appendChild(player);item.appendChild(detail);root.appendChild(item);
  });
 }
 async function loadAudioLibrary(){
- audioCatalog=[];
- if(!audioStorage){renderAudioLibrary();audioSay('Chưa khởi tạo được Firebase Storage. Kiểm tra storageBucket và bật Cloud Storage trong Firebase.',true);return;}
- if(!fb){renderAudioLibrary();audioSay('Firestore chưa được cấu hình nên chưa thể đồng bộ danh sách nhạc.',true);return;}
+ audioSay('Đang tải danh sách nhạc từ GitHub…');
  try{
-   var response=await fetch(base+':runQuery?key='+encodeURIComponent(CFG.apiKey),{
-     method:'POST',headers:{'Content-Type':'application/json'},
-     body:JSON.stringify({structuredQuery:{from:[{collectionId:AUDIO_COLLECTION}],orderBy:[{field:{fieldPath:'ts'},direction:'DESCENDING'}],limit:100}})
-   });
-   var body=await response.json().catch(function(){return{};});
-   if(!response.ok)throw new Error(body.error&&body.error.message||('Firestore HTTP '+response.status));
-   audioCatalog=(body||[]).filter(function(x){return x.document;}).map(function(x){return audioFields(x.document);}).filter(function(x){return x.downloadURL&&x.storagePath;});
-   renderAudioLibrary();
-   audioSay('Đã tải '+audioCatalog.length+' file nhạc dùng chung từ thư viện.');
+   var manifestUrl=new URL(AUDIO_MANIFEST,document.baseURI);
+   manifestUrl.searchParams.set('v',String(Date.now()));
+   var response=await fetch(manifestUrl.href,{cache:'no-store'});
+   if(!response.ok)throw new Error('Không tìm thấy '+AUDIO_MANIFEST+' (HTTP '+response.status+').');
+   var data=await response.json();
+   if(!data||!Array.isArray(data.tracks))throw new Error('playlist.json phải có thuộc tính "tracks" là một danh sách.');
+   var tracks=data.tracks.filter(validAudioTrack).slice(0,100);
+   renderAudioLibrary(tracks);
+   audioSay('Đã tải '+tracks.length+' bài nhạc từ GitHub. Danh sách được đồng bộ cho mọi người truy cập website.');
+   if(tracks.length!==data.tracks.length)console.warn('Một số dòng trong playlist.json không hợp lệ và đã bị bỏ qua.');
  }catch(e){
-   renderAudioLibrary();audioSay('Không tải được thư viện nhạc: '+e.message,true);console.error(e);
+   renderAudioLibrary([]);
+   audioSay('Không tải được thư viện nhạc: '+e.message+' Hãy kiểm tra thư mục audio/ và file playlist.json.',true);
+   console.error('GitHub audio library error:',e);
  }
 }
-async function saveAudioDocument(track){
- if(!currentAudioUser)throw new Error('Bạn cần đăng nhập Google để lưu danh sách nhạc.');
- var idToken=await currentAudioUser.getIdToken();
- var fields={
-   title:{stringValue:track.title},fileName:{stringValue:track.fileName},
-   storagePath:{stringValue:track.storagePath},downloadURL:{stringValue:track.downloadURL},
-   contentType:{stringValue:track.contentType},size:{integerValue:String(track.size)},
-   ts:{integerValue:String(Date.now())}
- };
- var r=await fetch(base+'/'+AUDIO_COLLECTION+'?key='+encodeURIComponent(CFG.apiKey),{
-   method:'POST',
-   headers:{'Content-Type':'application/json','Authorization':'Bearer '+idToken},
-   body:JSON.stringify({fields:fields})
- });
- var j=await r.json().catch(function(){return{};});
- if(!r.ok)throw new Error(j.error&&j.error.message||('Firestore HTTP '+r.status));
- return j;
-}
-async function uploadAudioFile(file){
- if(!file)return;
- if(!currentAudioUser){audioSay('Hãy đăng nhập Google trước khi tải nhạc lên.',true);return;}
- if(!audioStorage){audioSay('Firebase Storage chưa sẵn sàng. Kiểm tra bucket và cấu hình Firebase.',true);return;}
- if(file.size>MAX_AUDIO_BYTES){audioSay('File vượt quá giới hạn 25 MB. Hãy chọn file nhỏ hơn.',true);return;}
- var type=file.type||'';
- if(!type.startsWith('audio/')){
-   var ext=(file.name.split('.').pop()||'').toLowerCase();
-   var allowed=['mp3','m4a','wav','ogg','oga','aac','flac','webm'];
-   if(allowed.indexOf(ext)===-1){audioSay('Định dạng chưa được hỗ trợ. Hãy chọn file âm thanh MP3, M4A, WAV, OGG, AAC hoặc FLAC.',true);return;}
-   type=({mp3:'audio/mpeg',m4a:'audio/mp4',wav:'audio/wav',ogg:'audio/ogg',oga:'audio/ogg',aac:'audio/aac',flac:'audio/flac',webm:'audio/webm'})[ext]||'application/octet-stream';
- }
- var fileName=audioSafeName(file.name),path='class-audio/'+Date.now()+'-'+fileName;
- var storageRef=audioStorage.ref().child(path);
- var uploadLabel=$('#audioUploadLabel');uploadLabel.classList.add('is-disabled');
- audioProgress.style.display='block';audioProgress.value=0;
- audioSay('Đang tải '+file.name+' lên Firebase Storage…');
- try{
-   var task=storageRef.put(file,{contentType:type,customMetadata:{originalName:file.name}});
-   await new Promise(function(resolve,reject){
-     task.on('state_changed',function(snapshot){
-       var pct=snapshot.totalBytes?Math.round(snapshot.bytesTransferred/snapshot.totalBytes*100):0;
-       audioProgress.value=pct;audioSay('Đang tải '+file.name+': '+pct+'%');
-     },reject,resolve);
-   });
-   var downloadURL=await storageRef.getDownloadURL();
-   var track={title:file.name.replace(/\.[^.]+$/,''),fileName:file.name,storagePath:path,downloadURL:downloadURL,contentType:type,size:file.size};
-   await saveAudioDocument(track);
-   audioSay('Đã tải và lưu '+file.name+'. Mọi người có thể nghe trên các thiết bị khác.');
-   await loadAudioLibrary();
- }catch(e){
-   console.error('Audio upload failed:',e);
-   audioSay('Tải nhạc chưa thành công: '+(e.message||e.code||'Lỗi không xác định')+'. Kiểm tra Firebase Storage Rules, Firestore Rules và gói dịch vụ.',true);
- }finally{
-   uploadLabel.classList.remove('is-disabled');audioProgress.style.display='none';audioProgress.value=0;
-   $('#af').value='';
- }
-}
-async function deleteAudioTrack(track,button){
- if(!isAudioAdmin()){audioSay('Bạn cần đăng nhập bằng email quản trị để xóa nhạc.',true);return;}
- if(!confirm('Xóa vĩnh viễn “'+track.title+'” khỏi thư viện nhạc?'))return;
- button.disabled=true;button.textContent='Đang xóa…';
- try{
-   await audioStorage.ref().child(track.storagePath).delete();
-   var idToken=await currentAudioUser.getIdToken();
-   var response=await fetch(base+'/'+AUDIO_COLLECTION+'/'+encodeURIComponent(track.id)+'?key='+encodeURIComponent(CFG.apiKey),{
-     method:'DELETE',headers:{'Authorization':'Bearer '+idToken}
-   });
-   if(!response.ok){var data=await response.json().catch(function(){return{};});throw new Error(data.error&&data.error.message||('Firestore HTTP '+response.status));}
-   audioSay('Đã xóa file khỏi Firebase Storage và danh sách nhạc.');
-   await loadAudioLibrary();
- }catch(e){
-   console.error('Audio delete failed:',e);
-   audioSay('Không xóa được hoàn toàn: '+(e.message||e.code||'Lỗi không xác định')+'. Kiểm tra quyền quản trị và Storage Rules.',true);
-   button.disabled=false;button.textContent='✕ Xóa';
- }
-}
-async function toggleAudioAdmin(){
- if(!audioAuth){audioSay('Firebase Authentication chưa khởi tạo được. Kiểm tra cấu hình Firebase.',true);return;}
- if(currentAudioUser){
-   try{await audioAuth.signOut();audioSay('Đã đăng xuất Google.');}
-   catch(e){audioSay('Đăng xuất lỗi: '+e.message,true);}
-   return;
- }
- try{
-   var provider=new firebase.auth.GoogleAuthProvider();
-   provider.setCustomParameters({prompt:'select_account'});
-   await audioAuth.signInWithPopup(provider);
-   audioSay('Đăng nhập Google thành công.');
- }catch(e){audioSay('Không đăng nhập được: '+(e.message||e.code||'Lỗi xác thực')+'. Kiểm tra Google provider và Authorized domains.',true);}
-}
-if(audioAuth){
- audioAuth.onAuthStateChanged(function(user){
-   currentAudioUser=user||null;
-   audioAdmin=!!(user&&user.email&&user.email.toLowerCase()===String(CFG.adminEmail).toLowerCase()&&CFG.adminEmail.indexOf('hoanggiaky76@gmail.com')!==0);
-   updateAudioAdminUI();
- });
-}else{
- renderAudioLibrary();audioSay('Firebase Storage/Auth chưa sẵn sàng. Kiểm tra bucket và cấu hình Firebase.',true);
-}
-$('#audioAdminBtn').addEventListener('click',toggleAudioAdmin);
-$('#af').addEventListener('change',function(){var file=this.files&&this.files[0];if(file)uploadAudioFile(file);});
+$('#reloadAudioBtn').addEventListener('click',loadAudioLibrary);
+loadAudioLibrary();
 
 pgo.onclick=psend;pload();
 })();
