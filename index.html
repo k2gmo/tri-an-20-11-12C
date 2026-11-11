@@ -248,13 +248,13 @@ var CFG={
  projectId:'tri-an-thay-co-2011',
  authDomain:'tri-an-thay-co-2011.firebaseapp.com',
  storageBucket:'tri-an-thay-co-2011.firebasestorage.app',
- adminEmail:'CHANGE_THIS_TO_ADMIN_EMAIL'
+ adminEmail:'hoanggiaky76@gmail.com'
 };
 var MAX_AUDIO_BYTES=25*1024*1024;
 var AUDIO_COLLECTION='audioTracks';
 var firebaseApp=null, audioStorage=null, audioAuth=null, currentAudioUser=null, audioAdmin=false;
 try {
- if(window.firebase && CFG.storageBucket && !CFG.storageBucket.startsWith('YOUR_')) {
+ if(window.firebase && CFG.storageBucket && !CFG.storageBucket.startsWith('tri-an-thay-co-2011.firebasestorage.app')) {
    firebaseApp=firebase.apps.length ? firebase.app() : firebase.initializeApp({
      apiKey:CFG.apiKey, projectId:CFG.projectId,
      authDomain:CFG.authDomain, storageBucket:CFG.storageBucket
@@ -505,7 +505,7 @@ async function toggleAudioAdmin(){
 if(audioAuth){
  audioAuth.onAuthStateChanged(function(user){
    currentAudioUser=user||null;
-   audioAdmin=!!(user&&user.email&&user.email.toLowerCase()===String(CFG.adminEmail).toLowerCase()&&CFG.adminEmail.indexOf('CHANGE_THIS')!==0);
+   audioAdmin=!!(user&&user.email&&user.email.toLowerCase()===String(CFG.adminEmail).toLowerCase()&&CFG.adminEmail.indexOf('hoanggiaky76@gmail.com')!==0);
    updateAudioAdminUI();
  });
 }else{
