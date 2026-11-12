@@ -190,12 +190,7 @@ footer h2{color:var(--co)}
 <div class="n rv">03 · TRIỂN LÃM ẢO</div>
 <h2 class="rv">"Hiền tài là nguyên khí quốc gia"</h2>
 <p class="sub rv">Những khoảnh khắc gắn bó giữa thầy và trò. Chạm (hoặc đặt chuột) vào khung ảnh để ký ức được phục chế thành màu.</p>
-<div class="gal rv">
-<div class="fr" style="--r:-2deg" tabindex="0"><div class="ph"><img src="cong-truong.webp" alt="Cổng trường – nơi hành trình bắt đầu"></div><p>Cổng trường – nơi hành trình bắt đầu</p></div>
-<div class="fr" style="--r:1.5deg" tabindex="0"><div class="ph"><img src="tuong.webp" alt="Dưới bóng tượng đài Quang Trung"></div><p>Dưới bóng tượng đài Quang Trung</p></div>
-<div class="fr" style="--r:-1deg" tabindex="0"><div class="ph"><img src="hien-tai.webp" alt="Hiền tài là nguyên khí quốc gia"></div><p>Hiền tài là nguyên khí quốc gia</p></div>
-<div class="fr" style="--r:2deg" tabindex="0"><div class="ph"><img src="thay-tro.webp" alt="Khoảnh khắc tri ân thầy cô"></div><p>Khoảnh khắc tri ân thầy cô</p></div>
-</div>
+<div class="gal rv" id="galleryGrid" aria-live="polite"></div><div class="pgr" id="galleryPager" aria-label="Phân trang triển lãm"></div>
 <p class="hint">Ảnh tư liệu: Trường THPT Chuyên Quang Trung.</p>
 <h3 class="stt rv">Treo kỷ niệm lên triển lãm</h3>
 <p class="sub rv" style="margin-bottom:20px">Kể một kỷ niệm đáng nhớ với thầy cô – kỷ niệm của bạn sẽ được treo lên bức tường này.</p>
@@ -236,7 +231,7 @@ var CFG={
  apiKey:'AIzaSyB1Ap5p5FbTY_ic3glD2WjCQ2FE6O2o3go',
  projectId:'tri-an-thay-co-2011'
 };
-var KEY='triAnWishes',L=[],cur=1,PER=6,fb=!!(CFG.apiKey&&CFG.projectId),base='https://firestore.googleapis.com/v1/projects/'+CFG.projectId+'/databases/(default)/documents';
+var KEY='triAnWishes',L=[],cur=1,PER=6,MEM_PER_PAGE=4,POSTS_PER_PAGE=2,GALLERY_PER_PAGE=3,fb=!!(CFG.apiKey&&CFG.projectId),base='https://firestore.googleapis.com/v1/projects/'+CFG.projectId+'/databases/(default)/documents';
 var seed=[{t:'Chúc thầy cô luôn khỏe và hạnh phúc!',w:'Lớp 12A'},{t:'Thầy là người truyền lửa cho em.',w:'Minh'},{t:'Cảm ơn cô đã kiên nhẫn với chúng em ♥',w:'Lan'}];
 function st(m){$('#st').textContent=m}
 function hs(s){var h=0;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return Math.abs(h)}
@@ -274,18 +269,41 @@ if(p.k===0){cx.save();cx.translate(p.x,p.y);cx.rotate(p.r);cx.beginPath();cx.ell
 else if(p.k===1)star(p.x,p.y,p.s*.8);
 else{cx.beginPath();cx.ellipse(p.x,p.y,p.s*.8,p.s,0,0,6.28);cx.fill();cx.strokeStyle=p.c;cx.lineWidth=1;cx.beginPath();cx.moveTo(p.x,p.y+p.s);cx.quadraticCurveTo(p.x+6,p.y+p.s+12,p.x,p.y+p.s+24);cx.stroke()}});
 cx.globalAlpha=1;vy*=.9;requestAnimationFrame(draw)}draw();
-var hh=$('.hero>div'),art=$('.art'),mq=$('#mq'),tl=$('.tl'),frs=document.querySelectorAll('.fr');
+var hh=$('.hero>div'),art=$('.art'),mq=$('#mq'),tl=$('.tl'),frs;
+var GALLERY=[
+ {src:'cong-truong.webp',alt:'Cổng trường – nơi hành trình bắt đầu',title:'Cổng trường – nơi hành trình bắt đầu',r:'-2deg'},
+ {src:'tuong.webp',alt:'Dưới bóng tượng đài Quang Trung',title:'Dưới bóng tượng đài Quang Trung',r:'1.5deg'},
+ {src:'hien-tai.webp',alt:'Hiền tài là nguyên khí quốc gia',title:'Hiền tài là nguyên khí quốc gia',r:'-1deg'},
+ {src:'thay-tro.webp',alt:'Khoảnh khắc tri ân thầy cô',title:'Khoảnh khắc tri ân thầy cô',r:'2deg'}
+];
+var galleryPage=1;
+function renderGallery(){
+ var grid=$('#galleryGrid');if(!grid)return;grid.innerHTML='';
+ var total=Math.max(1,Math.ceil(GALLERY.length/GALLERY_PER_PAGE));if(galleryPage>total)galleryPage=total;
+ GALLERY.slice((galleryPage-1)*GALLERY_PER_PAGE,galleryPage*GALLERY_PER_PAGE).forEach(function(item){
+  var frame=document.createElement('div'),photo=document.createElement('div'),img=document.createElement('img'),caption=document.createElement('p');
+  frame.className='fr';frame.tabIndex=0;frame.style.setProperty('--r',item.r);
+  photo.className='ph';img.src=item.src;img.alt=item.alt;caption.textContent=item.title;
+  photo.appendChild(img);frame.appendChild(photo);frame.appendChild(caption);grid.appendChild(frame);
+ });
+ var pager=$('#galleryPager');pager.innerHTML='';if(total<2)return;
+ function add(label,page,active,disabled){var button=document.createElement('button');button.type='button';button.textContent=label;if(active)button.className='on';button.disabled=!!disabled;button.setAttribute('aria-label',typeof page==='number'?'Trang '+page:label);button.onclick=function(){galleryPage=page;renderGallery();$('#galleryGrid').scrollIntoView({behavior:'smooth',block:'center'});};pager.appendChild(button);}
+ add('‹',galleryPage-1,false,galleryPage===1);
+ for(var i=1;i<=total;i++){if(total>7&&i!==1&&i!==total&&Math.abs(i-galleryPage)>1){if(!pager.lastChild||pager.lastChild.textContent!=='…'){var dots=document.createElement('span');dots.textContent='…';pager.appendChild(dots);}continue;}add(String(i),i,i===galleryPage,false);}
+ add('›',galleryPage+1,false,galleryPage===total);
+}
+renderGallery();
 function sc(){var y=scrollY;vy=Math.max(-40,Math.min(40,y-sy));sy=y;
 var mx=document.documentElement.scrollHeight-innerHeight;$('#bar').style.width=(mx>0?y/mx*100:0)+'%';
 hh.style.transform='translateY('+y*.15+'px)';art.style.transform='translateY('+y*.08+'px)';
 var r=mq.parentNode.getBoundingClientRect();mq.style.transform='translateX('+(-(innerHeight-r.top)*.9+200)+'px)';
 var t=tl.getBoundingClientRect();tl.style.setProperty('--p',Math.max(0,Math.min(100,(innerHeight*.65-t.top)/t.height*100))+'%');
-frs.forEach(function(f,i){var b=f.getBoundingClientRect();f.style.setProperty('--py',((b.top+b.height/2-innerHeight/2)/innerHeight*(i%2?-1:1)*36)+'px')})}
+frs=document.querySelectorAll('#galleryGrid .fr');frs.forEach(function(f,i){var b=f.getBoundingClientRect();f.style.setProperty('--py',((b.top+b.height/2-innerHeight/2)/innerHeight*(i%2?-1:1)*36)+'px')})}
 addEventListener('scroll',function(){requestAnimationFrame(sc)},{passive:true});sc();
 var MK='triAnMem',ML=[],mc=1,mseed=[{t:'Cô đã đứng lại sau giờ học để giảng cho em từng bước bài toán khó. Em chưa bao giờ quên buổi chiều ấy.',w:'Lớp 12A',to:'cô chủ nhiệm'},{t:'Thầy nói “sai thì sửa, đừng sợ” – câu nói ấy theo em đến tận bây giờ.',w:'Minh',to:'thầy dạy Toán'},{t:'Chuyến dã ngoại cùng lớp, cô đã đội mưa cùng chúng em. Cảm ơn cô rất nhiều.',w:'Lan',to:'cô dạy Văn'}];
 function mstat(m){$('#mst').textContent=m}
-function mrender(){var w=$('#mwall');w.innerHTML='';var tp=Math.max(1,Math.ceil(ML.length/PER));if(mc>tp)mc=tp;
-ML.slice((mc-1)*PER,mc*PER).forEach(function(o){var n=document.createElement('div'),k=hs(o.t+o.w),b=document.createElement('b'),p=document.createElement('p'),s=document.createElement('small');n.className='mem';n.style.setProperty('--r',(k%5-2)+'deg');b.textContent='Gửi '+(o.to||'thầy cô');p.textContent=o.t;s.textContent='— '+(o.w||'Một học trò');n.appendChild(b);n.appendChild(p);n.appendChild(s);w.appendChild(n)});mpager(tp)}
+function mrender(){var w=$('#mwall');w.innerHTML='';var tp=Math.max(1,Math.ceil(ML.length/MEM_PER_PAGE));if(mc>tp)mc=tp;
+ML.slice((mc-1)*MEM_PER_PAGE,mc*MEM_PER_PAGE).forEach(function(o){var n=document.createElement('div'),k=hs(o.t+o.w),b=document.createElement('b'),p=document.createElement('p'),s=document.createElement('small');n.className='mem';n.style.setProperty('--r',(k%5-2)+'deg');b.textContent='Gửi '+(o.to||'thầy cô');p.textContent=o.t;s.textContent='— '+(o.w||'Một học trò');n.appendChild(b);n.appendChild(p);n.appendChild(s);w.appendChild(n)});mpager(tp)}
 function mpager(tp){var e=$('#mpgr');e.innerHTML='';if(tp<2)return;
 function b(l,p,on,dis){var x=document.createElement('button');x.textContent=l;if(on)x.className='on';x.disabled=!!dis;x.onclick=function(){mc=p;mrender();$('#mwall').scrollIntoView({behavior:'smooth'})};e.appendChild(x)}
 b('‹',mc-1,0,mc<2);for(var i=1;i<=tp;i++){if(tp>7&&i!==1&&i!==tp&&Math.abs(i-mc)>1){if(e.lastChild.textContent!=='…'){var sp=document.createElement('span');sp.textContent='…';e.appendChild(sp)}continue}b(i,i,i===mc)}b('›',mc+1,0,mc>=tp)}
@@ -301,9 +319,9 @@ ML.unshift(o);mc=1;mrender()}
 mgo.onclick=msend;mload();
 var PK='triAnPosts',PL=[],pp=1,AUDIO=[{t:'Tiếng thầy cô – Podcast của lớp',src:'podcast.mp3'}],COV={'Tản văn':'thay-tro.webp','Thơ':'hanh-lang.webp','Phỏng vấn':'san-truong.webp'};
 function pstat(m){$('#pst').textContent=m}
-function prender(){var g=$('#pgrid');g.innerHTML='';var tp=Math.max(1,Math.ceil(PL.length/PER));if(pp>tp)pp=tp;
+function prender(){var g=$('#pgrid');g.innerHTML='';var tp=Math.max(1,Math.ceil(PL.length/POSTS_PER_PAGE));if(pp>tp)pp=tp;
 if(!PL.length){var e0=document.createElement('p');e0.className='hint';e0.textContent='Chưa có bài viết nào – hãy là người đầu tiên đăng bài!';g.appendChild(e0)}
-PL.slice((pp-1)*PER,pp*PER).forEach(function(o){var c=document.createElement('button'),im=document.createElement('img'),sm=document.createElement('small'),hh3=document.createElement('h3'),pg0=document.createElement('p');
+PL.slice((pp-1)*POSTS_PER_PAGE,pp*POSTS_PER_PAGE).forEach(function(o){var c=document.createElement('button'),im=document.createElement('img'),sm=document.createElement('small'),hh3=document.createElement('h3'),pg0=document.createElement('p');
 c.className='card';im.className='cv';im.alt='';im.src=COV[o.k]||COV['Tản văn'];sm.textContent=o.k;hh3.textContent=o.ti;pg0.textContent=o.t.length>90?o.t.slice(0,90)+'…':o.t;
 c.appendChild(im);c.appendChild(sm);c.appendChild(hh3);c.appendChild(pg0);
 c.onclick=function(){mi.src=im.src;mt.textContent=o.ti;mb.textContent=o.t+'\n\n— '+(o.w||'Một học trò');md.classList.add('on')};g.appendChild(c)});ppager(tp)}
