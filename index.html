@@ -137,11 +137,96 @@ footer h2{color:var(--co)}
 .audio-admin-state{font-size:13px;color:var(--mut);margin:8px 0 12px}
 @media(max-width:600px){.aud .audio-head{align-items:flex-start}.audio-tools{align-items:stretch}.audio-tools .btn{width:100%;text-align:center}}
 @media(prefers-reduced-motion:reduce){#fx{display:none}.sf,.bk,.pc,.st{animation:none}}
+
+/* Navigation refinement: balanced, compact and touch-friendly on mobile */
+nav{
+  width:max-content;
+  max-width:min(94vw,760px);
+  min-width:0;
+  flex-wrap:nowrap;
+  gap:4px;
+  padding:7px 10px;
+}
+nav .nav-brand{
+  display:flex;
+  flex:0 0 auto;
+  align-items:center;
+  gap:8px;
+  padding:5px 10px 5px 7px;
+  white-space:nowrap;
+  text-decoration:none;
+}
+nav .nav-brand .nl{
+  display:block;
+  width:34px;
+  height:34px;
+  object-fit:contain;
+  flex:0 0 34px;
+}
+nav .nav-brand b{
+  display:block;
+  margin:0;
+  font-size:16px;
+  line-height:1;
+  white-space:nowrap;
+}
+nav>a:not(.nav-brand){
+  flex:0 0 auto;
+  white-space:nowrap;
+  padding:7px 10px;
+  font-size:13px;
+  line-height:1.2;
+}
+@media(max-width:600px){
+  nav{
+    top:calc(8px + env(safe-area-inset-top,0px));
+    width:calc(100vw - 24px);
+    max-width:520px;
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    grid-template-rows:auto auto;
+    gap:3px;
+    padding:7px 8px 8px;
+    border-radius:24px;
+    overflow:visible;
+  }
+  nav .nav-brand{
+    grid-column:1/-1;
+    justify-self:center;
+    padding:2px 10px 5px;
+    gap:7px;
+  }
+  nav .nav-brand .nl{
+    width:29px;
+    height:29px;
+    flex-basis:29px;
+  }
+  nav .nav-brand b{
+    display:block;
+    font-size:15px;
+  }
+  nav>a:not(.nav-brand){
+    min-width:0;
+    width:100%;
+    text-align:center;
+    padding:8px 2px;
+    font-size:clamp(10px,2.8vw,12px);
+    border-radius:14px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .hero{padding-top:145px}
+}
+@media(max-width:370px){
+  nav{width:calc(100vw - 16px);gap:1px;padding-inline:5px}
+  nav>a:not(.nav-brand){font-size:10px;padding-inline:1px}
+}
+
 </style>
 </head>
 <body>
 <canvas id="fx"></canvas><div id="bar"></div>
-<nav><img class="nl" src="logo.webp" alt=""><b>Quang Trung</b><a href="#lichsu">Lịch sử</a><a href="#emag">E-Magazine</a><a href="#trienlam">Triển lãm</a><a href="#loichuc">Lời chúc</a></nav>
+<nav aria-label="Điều hướng chính"><a class="nav-brand" href="#top" aria-label="Quang Trung - về trang chính"><img class="nl" src="logo.webp" alt="Logo Quang Trung"><b>Quang Trung</b></a><a href="#lichsu">Lịch sử</a><a href="#emag">E-Magazine</a><a href="#trienlam">Triển lãm</a><a href="#loichuc">Lời chúc</a></nav>
 
 <section class="hero" id="top">
 <div>
