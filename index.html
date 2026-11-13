@@ -528,7 +528,7 @@ if(fb){try{var r=await fetch(base+'/memories?key='+CFG.apiKey,{method:'POST',hea
 else{var a=[];try{a=JSON.parse(localStorage.getItem(MK)||'[]')}catch(e){}a.unshift(o);try{localStorage.setItem(MK,JSON.stringify(a))}catch(e){}}
 ML.unshift(o);mc=1;mrender()}
 mgo.onclick=msend;mload();
-var PK='triAnPosts',PL=[],pp=1,AUDIO=[{t:'Tiếng thầy cô – Podcast của lớp',src:'podcast.mp3'}],COV={'Tản văn':'thay-tro.webp','Thơ':'hanh-lang.webp','Phỏng vấn':'san-truong.webp'};
+var PK='triAnPosts',PL=[],pp=1,AUDIO=[{t:'Tiếng thầy cô – Podcast của lớp',src:'podcast.mp3'}],COV={'Tản văn':'thay-tan-tịnhđayo.webp','Thơ':'Screenshot 2026-11-13 225852.webp','Phỏng vấn':'san-truong.webp'};
 function pstat(m){$('#pst').textContent=m}
 function prender(){var g=$('#pgrid');g.innerHTML='';var tp=Math.max(1,Math.ceil(PL.length/POSTS_PER_PAGE));if(pp>tp)pp=tp;
 if(!PL.length){var e0=document.createElement('p');e0.className='hint';e0.textContent='Chưa có bài viết nào – hãy là người đầu tiên đăng bài!';g.appendChild(e0)}
